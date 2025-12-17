@@ -1,2 +1,33 @@
-# TeliVision
-Python camera controller library, wrapper for Toshiba TeliCamSDK
+# Telivision - Pythonic controller for Telicam
+
+Simple Python wrapper for Toshiba's Python API.
+
+## Setup
+
+External requirements:
+
+- `pytelicam` from Toshiba TeliSDK
+  - A wheel is included in this github repo for convenience, as allowed by the Toshiba SDK license.
+  - Up-to-date versions may be downloaded from [Toshiba's site](https://www.toshiba-teli.co.jp/en/products/industrial-camera/software-telicamsdk.htm)
+
+## Usage
+
+For simple camera mode operation, the library implements a `telivision` command, which runs the
+default interface (currently a simple OpenCV interface) in camera mode. The interface implements
+commands for pause/play (space), manual trigger capture (R when paused), and saving current capture (S).
+
+For algorithmic control, one should use the `TeliWrapper` and `TeliCamera` interfaces. A minimal working example of streaming video from a telicam:
+
+```Python
+import cv2
+    wrap = TeliWrapper()
+    cam = wrap.create_camera(0)
+    cam.start_stream()
+    while True:
+        image = cam.trigger_capture()
+        cv2.imshow("Teli Camera", image)
+        key = cv2.waitKey(1)
+        if key == 27:  # ESC key
+            break
+    cam.stop_stream()
+```
