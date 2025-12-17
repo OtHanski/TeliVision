@@ -1,10 +1,10 @@
 from telivision.teliwrap import TeliWrapper, TeliCamera
 from telivision.telienums import VerbosityLevel, CaptureMode
 
-from numpy.typing import NDArray
 import cv2
 from tkinter import filedialog
 import tkinter as tk
+import traceback
 
 
 class TeliOpenCV:
@@ -13,12 +13,6 @@ class TeliOpenCV:
         print(verbosity)
         self.teli_wrapper = TeliWrapper(verbosity=self.verbosity)
         self.camera: TeliCamera = self.teli_wrapper.create_camera(cam_index=cam_index)
-
-    def capture_image(self) -> NDArray:
-        image_data = self.camera.trigger_capture()
-        if self.verbosity >= VerbosityLevel.LOW:
-            print(f"Image captured from camera {self.camera.index}.")
-        return image_data
 
     def handle_input(self, key):
         if key == 'q' or key == 27:  # 'q' or ESC key
@@ -66,23 +60,19 @@ class TeliOpenCV:
         self.triggered = True
 
         # Start camera stream
-        self.camera.start_stream()
+        with self.camera as cam:
+            while self.capture_mode != CaptureMode.END:
+                if self.capture_mode == CaptureMode.CONTINUOUS or self.triggered:
+                    self.triggered = False
+                    self.image_data = cam.trigger_capture()
+                    xy_ratio = self.image_data.shape[1] / self.image_data.shape[0]
 
-        while self.capture_mode != CaptureMode.END:
-            if self.capture_mode == CaptureMode.CONTINUOUS or self.triggered:
-                self.triggered = False
-                self.image_data = self.capture_image()
-                xy_ratio = self.image_data.shape[1] / self.image_data.shape[0]
+                    # Resize to reasonable display size
+                    show_image = cv2.resize(self.image_data, dsize=(int(1080 * xy_ratio), 1080))
+                    cv2.imshow('image', show_image)
 
-                # Resize to reasonable display size
-                show_image = cv2.resize(self.image_data, dsize=(int(1080 * xy_ratio), 1080))
-                cv2.imshow('image', show_image)
-
-            user_input = cv2.waitKey(5) & 0xFF
-            self.handle_input(user_input)
-
-        # Exit cleanup
-        self.camera.stop_stream()
+                user_input = cv2.waitKey(5) & 0xFF
+                self.handle_input(user_input)
 
 
 def teli_opencv_main():
@@ -91,7 +81,7 @@ def teli_opencv_main():
         teli_opencv.display_loop()
 
     except Exception as exception:
-        print("An error occurred!")
+        traceback.print_exc()
         print(exception)
 
     finally:

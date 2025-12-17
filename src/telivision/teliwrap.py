@@ -94,6 +94,8 @@ class TeliCamera:
 
     def _init_stream(self, cam_device: CameraDevice):
         self.stream = cam_device.cam_stream
+        self.stream_running = False
+        print(self.stream.is_open)
 
         # Set trigger mode
         if self.trigger_signal is not None:
@@ -115,7 +117,6 @@ class TeliCamera:
                 raise Exception(f"Failed to disable trigger mode on camera {self.index}. Status: {response}")
 
         self.stream.open(self.trigger_signal)
-        self.stream_running = False
 
     def apply_settings(self, settings: TeliCameraSettings):
         self.cam_device.cam_control.set_exposure_time(settings.exposure_time)
@@ -172,6 +173,14 @@ class TeliCamera:
                 np_image = image_data.get_ndarray(OutputImageType.Bgr24)
 
             return np_image
+
+    def __enter__(self):
+        self.start_stream()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.stop_stream()
+        self.cam_device.close()
 
     def __del__(self):
         self.stop_stream()

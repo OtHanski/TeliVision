@@ -21,9 +21,11 @@ For algorithmic control, one should use the `TeliWrapper` and `TeliCamera` inter
 ```Python
 from telivision.teliwrap import TeliWrapper
 import cv2
+
 wrap = TeliWrapper()
 cam = wrap.create_camera(0)
 cam.start_stream()
+
 while True:
     image = cam.trigger_capture()
     cv2.imshow("Teli Camera", image)
@@ -31,5 +33,6 @@ while True:
     if key == 27:  # ESC key
         cv2.destroyAllWindows()
         break
+
 cam.stop_stream()
 ```
