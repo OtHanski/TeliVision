@@ -207,5 +207,6 @@ if __name__ == "__main__":
         cv2.imshow("Teli Camera", image)
         key = cv2.waitKey(1)
         if key == 27:  # ESC key
+            cv2.destroyAllWindows()
             break
     cam.stop_stream()
