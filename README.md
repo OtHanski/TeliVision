@@ -1,6 +1,6 @@
 # Telivision - Pythonic controller for Telicam
 
-Simple Python wrapper for Toshiba's Python API.
+Simple Python wrapper for Toshiba's Python API. Source code available in [Github](https://github.com/OtHanski/TeliVision).
 
 ## Setup
 
